@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тест: кинематика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#eef2f7; --grid:#d9e1ec; --card:#ffffff; --ink:#14233b; --muted:#5b6b82;
+  --line:#c9d3e1; --accent:#1f5fd6; --accent-ink:#ffffff; --ok:#17794a; --ok-bg:#e2f4ea;
+  --bad:#b3261e; --bad-bg:#fbe6e4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1826; --grid:#18253a; --card:#16223a; --ink:#e6edf8; --muted:#9aaac3;
+    --line:#2b3b57; --accent:#6c9bff; --accent-ink:#0f1826; --ok:#5fd596; --ok-bg:#133425;
+    --bad:#ff8f87; --bad-bg:#3a1b1a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1826; --grid:#18253a; --card:#16223a; --ink:#e6edf8; --muted:#9aaac3;
+  --line:#2b3b57; --accent:#6c9bff; --accent-ink:#0f1826; --ok:#5fd596; --ok-bg:#133425;
+  --bad:#ff8f87; --bad-bg:#3a1b1a;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; background-color:var(--bg); color:var(--ink);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  font:400 17px/1.55 "Onest",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+main{max-width:720px;margin:0 auto;padding:32px 16px 80px}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.1;margin:0 0 8px;font-weight:700;letter-spacing:-.02em}
+.lead{color:var(--muted);margin:0 0 24px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-weight:500}
+.track{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--accent);transition:width .25s}
+fieldset{border:1px solid var(--line);background:var(--card);border-radius:10px;margin:0 0 18px;padding:18px 18px 12px;min-width:0}
+legend{font-weight:700;padding:0 6px;margin-left:-6px;font-size:18px;max-width:100%}
+.q-num{color:var(--accent)}
+label{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;margin:0 0 8px;border:1px solid var(--line);
+  border-radius:8px;cursor:pointer}
+label:hover{border-color:var(--accent)}
+label:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+label:has(input:focus-visible){outline:3px solid var(--accent);outline-offset:2px}
+input[type=radio]{margin-top:5px;accent-color:var(--accent);flex:none}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:14px 26px;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+button.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.hint{color:var(--muted);font-size:15px;margin:10px 0 0}
+.score{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px;margin-bottom:22px}
+.score .big{font-size:56px;font-weight:700;line-height:1;letter-spacing:-.03em}
+.score p{margin:8px 0 18px;color:var(--muted)}
+.rev{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:16px 18px;margin-bottom:14px;border-left-width:6px}
+.rev.ok{border-left-color:var(--ok)} .rev.bad{border-left-color:var(--bad)}
+.rev h3{margin:0 0 10px;font-size:17px}
+.row{display:flex;gap:10px;align-items:baseline;padding:8px 10px;border-radius:6px;margin:4px 0}
+.row.ok{background:var(--ok-bg);color:var(--ok)} .row.bad{background:var(--bad-bg);color:var(--bad)}
+.row b{flex:none;min-width:130px}
+.expl{margin:10px 0 0;color:var(--muted);font-size:15px}
+[hidden]{display:none!important}
+.modes{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+.modes>span{color:var(--muted);margin-right:4px}
+.chip{padding:8px 16px;background:transparent;color:var(--accent);border:2px solid var(--accent);border-radius:99px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+/* формулы */
+.f{font-family:"Cambria Math","STIX Two Text","Times New Roman",serif;font-style:italic;font-size:1.18em;white-space:nowrap}
+.f sub,.f sup{font-size:.7em}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .2em;line-height:1.2}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .25em}
+.fr>span:last-child{padding:0 .25em}
+/* графики */
+.figwrap{max-width:340px;margin:4px 0 14px}
+.fig{width:100%;height:auto;display:block}
+.fig .gr{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.fig .ax{stroke:var(--ink);stroke-width:1.5}
+.fig .ln{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.fig .dt{fill:var(--accent)}
+.fig .tx{fill:var(--muted);font:13px "Onest",sans-serif}
+.fig .lb{fill:var(--ink);font:600 14px "Onest",sans-serif}
+@media (max-width:480px){.row{flex-direction:column;gap:2px}.row b{min-width:0}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Кинематика: формулы</h1>
+  <p class="lead">Формулы, единицы измерения, расчётные задачи и графики. В каждом вопросе один верный ответ. Принять g = 10 м/с².</p>
+
+  <section id="quiz">
+    <div class="modes" id="modes"><span>Вопросов в тесте (выбираются случайно):</span></div>
+    <div class="bar" aria-live="polite"><span id="count">0 из 0</span><div class="track"><div class="fill" id="fill"></div></div></div>
+    <div id="questions"></div>
+    <button id="submit" disabled>Показать результат</button>
+    <p class="hint" id="hint">Ответьте на все вопросы, чтобы увидеть результат.</p>
+  </section>
+
+  <section id="result" hidden>
+    <div class="score">
+      <div class="big" id="scoreBig"></div>
+      <p id="scoreText"></p>
+      <button id="retry" class="ghost">Пройти заново</button>
+    </div>
+    <div id="review"></div>
+  </section>
+</main>
+
+<script>
+// ---------- помощники для формул ----------
+const S=x=>`<sub>${x}</sub>`, P=x=>`<sup>${x}</sup>`;
+const F=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const f=x=>`<span class="f">${x}</span>`;
+const v0=`v${S(0)}`, x0=`x${S(0)}`, v02=`v${S(0)}${P(2)}`;
+
+// ---------- помощник для графиков ----------
+const G=({xl,yl,xm,ym,xt,yt,pts,dots=true})=>{
+  const X=t=>40+t/xm*210, Y=v=>150-v/ym*125;
+  let s=`<svg class="fig" viewBox="0 0 280 180" role="img" aria-label="График ${yl} от ${xl}">`;
+  xt.forEach(t=>s+=`<line class="gr" x1="${X(t)}" y1="150" x2="${X(t)}" y2="25"/><text class="tx" x="${X(t)}" y="166" text-anchor="middle">${t}</text>`);
+  yt.forEach(v=>s+=`<line class="gr" x1="40" y1="${Y(v)}" x2="250" y2="${Y(v)}"/><text class="tx" x="34" y="${Y(v)+4}" text-anchor="end">${v}</text>`);
+  s+=`<line class="ax" x1="40" y1="150" x2="264" y2="150"/><line class="ax" x1="40" y1="150" x2="40" y2="12"/>`;
+  s+=`<text class="lb" x="276" y="144" text-anchor="end">${xl}</text><text class="lb" x="48" y="18">${yl}</text>`;
+  s+=`<polyline class="ln" points="${pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" ")}"/>`;
+  if(dots)[pts[0],pts[pts.length-1]].forEach(p=>s+=`<circle class="dt" cx="${X(p[0])}" cy="${Y(p[1])}" r="4.5"/>`);
+  return s+`</svg>`;
+};
+
+// ---------- ВОПРОСЫ: редактируйте здесь ----------
+// o — варианты ответа, ПЕРВЫЙ вариант всегда правильный (в тесте они перемешиваются)
+// fig — необязательный рисунок, e — пояснение
+const parab=[]; for(let t=0;t<=3.001;t+=.25)parab.push([t,t*t]);
+const QUESTIONS=[
+{q:"Какая формула определяет ускорение?",
+ o:[f(`a = ${F('Δv','Δt')}`),f(`a = ${F('Δs','Δt')}`),f(`a = ${F('Δt','Δv')}`),f(`a = v·Δt`)],
+ e:"Ускорение — это изменение скорости за единицу времени. Отношение Δs/Δt — это скорость."},
+{q:"Какая формула описывает координату тела при прямолинейном равномерном движении?",
+ o:[f(`x = ${x0} + v·t`),f(`x = ${v0} + x·t`),f(`x = ${x0}·v·t`),f(`x = ${x0} + ${F('v','t')}`)],
+ e:"Начальная координата плюс путь, пройденный с постоянной скоростью: x = x₀ + v·t."},
+{q:"Какая формула выражает скорость при равноускоренном движении?",
+ o:[f(`v = ${v0} + a·t`),f(`v = ${v0} + a·t${P(2)}`),f(`v = a + ${v0}·t`),f(`v = ${v0} − ${F('a·t'+P(2),2)}`)],
+ e:"Скорость растёт на a каждую секунду: v = v₀ + a·t."},
+{q:"Какая формула выражает путь при равноускоренном движении?",
+ o:[f(`s = ${v0}·t + ${F('a·t'+P(2),2)}`),f(`s = ${v0}·t + a·t${P(2)}`),f(`s = ${v0} + ${F('a·t'+P(2),2)}`),f(`s = ${v0}·t + ${F('a·t',2)}`)],
+ e:"Верная формула: s = v₀t + at²/2. Ошибки в вариантах: потерян множитель ½, пропущено t или степень."},
+{q:"Какая формула — закон движения (координата) при равноускоренном движении?",
+ o:[f(`x = ${x0} + v${S('0x')}·t + ${F('a'+S('x')+'·t'+P(2),2)}`),
+    f(`x = v${S('0x')}·t + ${F('a'+S('x')+'·t'+P(2),2)}`),
+    f(`x = ${x0} + v${S('0x')}·t + a${S('x')}·t`),
+    f(`x = ${x0} + v${S('0x')} + ${F('a'+S('x')+'·t'+P(2),2)}`)],
+ e:"Координата = начальная координата + путь. Вариант без x₀ даёт только путь s."},
+{q:"Какая формула связывает скорости, ускорение и путь, не содержа времени?",
+ o:[f(`v${P(2)} = ${v02} + 2·a·s`),f(`v${P(2)} = ${v02} + a·s`),f(`v = ${v02} + 2·a·s`),f(`v${P(2)} = ${v02} + 2·a·t`)],
+ e:"Если исключить t из v = v₀ + at и s = v₀t + at²/2, получится v² = v₀² + 2as."},
+{q:"Автомобиль разгоняется из состояния покоя с ускорением 2 м/с² на пути 25 м. Какова его скорость в конце пути?",
+ o:["10 м/с","5 м/с","20 м/с","50 м/с"],
+ e:"v² = v₀² + 2as = 0 + 2·2·25 = 100, значит v = 10 м/с."},
+{q:"В каких единицах СИ измеряется ускорение?",
+ o:["м/с²","м/с","м²/с","кг·м/с"],
+ e:"Ускорение — это скорость (м/с), делённая на время (с): м/с²."},
+{q:"Скорость автомобиля 72 км/ч. Чему она равна в м/с?",
+ o:["20 м/с","7,2 м/с","72 м/с","259 м/с"],
+ e:"Чтобы перевести км/ч в м/с, делим на 3,6: 72 / 3,6 = 20."},
+{q:"Какая формула определяет угловую скорость?",
+ o:[f(`ω = ${F('Δφ','Δt')}`),f(`ω = ${F('Δt','Δφ')}`),f(`ω = Δφ·Δt`),f(`ω = ${F('Δv','Δt')}`)],
+ e:"Угловая скорость — угол поворота (Δφ) за единицу времени. Δv/Δt — это ускорение."},
+{q:"В каких единицах СИ измеряется угловая скорость?",
+ o:["рад/с","рад","м/с","Гц"],
+ e:"Угол измеряется в радианах, поэтому ω — в рад/с (радиан безразмерен, поэтому иногда пишут 1/с)."},
+{q:"Как связаны линейная скорость v и угловая скорость ω при движении по окружности радиуса R?",
+ o:[f(`v = ω·R`),f(`v = ${F('ω','R')}`),f(`v = ω·R${P(2)}`),f(`v = ${F('R','ω')}`)],
+ e:"Из ω = v/R получаем v = ω·R."},
+{q:"Какая формула связывает частоту ν и период T?",
+ o:[f(`ν = ${F(1,'T')}`),f(`ν = T`),f(`ν = 2π·T`),f(`ν = ${F('T','2π')}`)],
+ e:"Частота — число оборотов в секунду, период — время одного оборота: ν = 1/T."},
+{q:"В каких единицах СИ измеряется частота?",
+ o:["Гц (то есть с⁻¹)","с","рад/с","м/с"],
+ e:"1 Гц = 1 оборот в секунду = 1/с. В секундах измеряется период T."},
+{q:"Какое из выражений для угловой скорости НЕВЕРНО?",
+ o:[f(`ω = 2π·T`),f(`ω = ${F('2π','T')}`),f(`ω = 2π·ν`),f(`ω = ${F('v','R')}`)],
+ e:"Верно: ω = 2π/T = 2πν = v/R. Период стоит в знаменателе, а не в числителе."},
+{q:"Как выражается центростремительное ускорение через угловую скорость и радиус?",
+ o:[f(`a${S('ц')} = ω${P(2)}·R`),f(`a${S('ц')} = ω·R${P(2)}`),f(`a${S('ц')} = ${F('ω','R')}`),f(`a${S('ц')} = ${F('ω'+P(2),'R')}`)],
+ e:"Подставим v = ωR в a = v²/R: a = ω²R²/R = ω²R."},
+{q:"Тело движется по окружности радиусом 2 м со скоростью 4 м/с. Чему равно центростремительное ускорение?",
+ o:["8 м/с²","2 м/с²","4 м/с²","32 м/с²"],
+ e:"a = v²/R = 16 / 2 = 8 м/с²."},
+{q:"Колесо делает 5 оборотов в секунду. Чему равна его угловая скорость?",
+ o:["10π ≈ 31,4 рад/с","5 рад/с","5π ≈ 15,7 рад/с","0,2 рад/с"],
+ e:"ω = 2πν = 2π·5 = 10π ≈ 31,4 рад/с."},
+{q:"Тело падает вниз без начальной скорости. Какой путь оно пройдёт за 3 с?",
+ o:["45 м","30 м","15 м","90 м"],
+ e:"s = v₀t + gt²/2 = 0 + 10·9/2 = 45 м."},
+{q:"Тело брошено вертикально вверх со скоростью v₀. Как скорость зависит от времени?",
+ o:[f(`v = ${v0} − g·t`),f(`v = ${v0} + g·t`),f(`v = ${v0} − ${F('g·t'+P(2),2)}`),f(`v = g·t − ${v0}`)],
+ e:"Ускорение свободного падения направлено вниз, поэтому скорость вверх убывает: v = v₀ − gt."},
+{q:"Тело брошено вверх со скоростью 20 м/с. Через какое время оно достигнет верхней точки?",
+ o:["2 с","1 с","4 с","20 с"],
+ e:"В верхней точке v = 0: 0 = v₀ − gt, значит t = v₀/g = 20/10 = 2 с."},
+{q:"На графике показана зависимость скорости от времени. Чему равно ускорение тела?",
+ fig:G({xl:"t, с",yl:"v, м/с",xm:5,ym:12,xt:[1,2,3,4,5],yt:[2,4,6,8,10,12],pts:[[0,2],[4,10]]}),
+ o:["2 м/с²","2,5 м/с²","8 м/с²","5 м/с²"],
+ e:"a = Δv/Δt = (10 − 2)/4 = 2 м/с². Ускорение — это наклон графика v(t)."},
+{q:"По графику скорости найдите путь, пройденный телом за 3 с.",
+ fig:G({xl:"t, с",yl:"v, м/с",xm:4,ym:8,xt:[1,2,3,4],yt:[2,4,6,8],pts:[[0,0],[3,6]]}),
+ o:["9 м","6 м","18 м","2 м"],
+ e:"Путь равен площади под графиком v(t). Это треугольник: ½·3·6 = 9 м."},
+{q:"На графике показана зависимость координаты от времени. Чему равна скорость тела?",
+ fig:G({xl:"t, с",yl:"x, м",xm:4,ym:16,xt:[1,2,3,4],yt:[2,4,6,8,10,12,14,16],pts:[[0,2],[3,14]]}),
+ o:["4 м/с","2 м/с","5 м/с","12 м/с"],
+ e:"График x(t) — прямая, значит движение равномерное. v = Δx/Δt = (14 − 2)/3 = 4 м/с."},
+{q:"Какому движению соответствует этот график координаты?",
+ fig:G({xl:"t, с",yl:"x, м",xm:3.5,ym:10,xt:[1,2,3],yt:[3,6,9],pts:parab,dots:false}),
+ o:["Равноускоренному","Равномерному прямолинейному","Покою","Равнозамедленному до остановки"],
+ e:"График x(t) — парабола ветвями вверх: x = x₀ + at²/2 при a > 0. У равномерного движения график — прямая."},
+{q:"Какая формула описывает движение, график скорости которого показан на рисунке?",
+ fig:G({xl:"t, с",yl:"v, м/с",xm:5,ym:10,xt:[1,2,3,4,5],yt:[2,4,6,8,10],pts:[[0,8],[4,0]]}),
+ o:[f(`v = 8 − 2t`),f(`v = 8 + 2t`),f(`v = 2 − 8t`),f(`v = 8 − 4t`)],
+ e:"v₀ = 8 м/с, за 4 с скорость падает до нуля: a = −8/4 = −2 м/с². Тогда v = v₀ + at = 8 − 2t."},
+
+// ---------- дополнительные вопросы ----------
+{q:"Какая формула определяет скорость?",
+ o:[f(`v = ${F('Δr','Δt')}`),f(`v = ${F('Δt','Δr')}`),f(`v = Δr·Δt`),f(`v = ${F('Δr','Δt'+P(2))}`)],
+ e:"Скорость — это перемещение за единицу времени. Выражение Δr/Δt² имело бы единицы м/с², то есть было бы ускорением."},
+{q:"Какое движение называют равноускоренным?",
+ o:["Движение с постоянным ускорением","Движение с постоянной скоростью","Движение, при котором за каждую секунду проходится один и тот же путь","Любое движение по окружности"],
+ e:"При равноускоренном движении ускорение не меняется, а скорость изменяется на одну и ту же величину за равные промежутки времени."},
+{q:"Начальная координата тела 5 м, скорость 3 м/с (равномерное движение). Какова координата через 4 с?",
+ o:["17 м","12 м","32 м","7 м"],
+ e:"x = x₀ + v·t = 5 + 3·4 = 17 м. Вариант 12 м — это только путь, без начальной координаты."},
+{q:"Начальная скорость 3 м/с, ускорение 2 м/с². Какой будет скорость через 5 с?",
+ o:["13 м/с","10 м/с","25 м/с","7 м/с"],
+ e:"v = v₀ + at = 3 + 2·5 = 13 м/с."},
+{q:"Тело начинает движение из покоя с ускорением 4 м/с². Какой путь оно пройдёт за 3 с?",
+ o:["18 м","12 м","36 м","6 м"],
+ e:"s = at²/2 = 4·9/2 = 18 м."},
+{q:"Чему равен путь при равноускоренном движении из состояния покоя за время t?",
+ o:[f(`s = ${F('a·t'+P(2),2)}`),f(`s = a·t${P(2)}`),f(`s = ${F('a·t',2)}`),f(`s = ${F('a'+P(2)+'·t',2)}`)],
+ e:"При v₀ = 0 формула s = v₀t + at²/2 упрощается до s = at²/2."},
+{q:"Автомобиль тормозит с ускорением −5 м/с². Начальная скорость 20 м/с. Каков тормозной путь до полной остановки?",
+ o:["40 м","4 м","80 м","20 м"],
+ e:"v² = v₀² + 2as, при v = 0: 0 = 400 − 10·s, откуда s = 40 м."},
+{q:"Автомобиль тормозит с ускорением −5 м/с², начальная скорость 20 м/с. Через какое время он остановится?",
+ o:["4 с","100 с","0,25 с","15 с"],
+ e:"v = v₀ + at, при v = 0: t = −v₀/a = −20/(−5) = 4 с."},
+{q:"Скорость 15 м/с. Чему она равна в км/ч?",
+ o:["54 км/ч","4,2 км/ч","15 км/ч","90 км/ч"],
+ e:"Чтобы перевести м/с в км/ч, умножаем на 3,6: 15·3,6 = 54."},
+{q:"В каких единицах СИ измеряется угол поворота φ?",
+ o:["Радианы","Градусы","рад/с","Обороты"],
+ e:"В СИ угол измеряется в радианах (2π рад = 360°). Тогда ω = Δφ/Δt получается в рад/с."},
+{q:"Период обращения T = 0,5 с. Чему равна частота?",
+ o:["2 Гц","0,5 Гц","3,14 Гц","4π Гц"],
+ e:"ν = 1/T = 1/0,5 = 2 Гц."},
+{q:"Колесо делает 120 оборотов в минуту. Какова его частота в СИ?",
+ o:["2 Гц","120 Гц","0,5 Гц","7200 Гц"],
+ e:"В СИ время измеряется в секундах: 120 об/мин = 120/60 = 2 об/с = 2 Гц."},
+{q:"Период обращения T = 2 с. Чему равна угловая скорость?",
+ o:["π ≈ 3,14 рад/с","2π ≈ 6,28 рад/с","4π ≈ 12,6 рад/с","0,5 рад/с"],
+ e:"ω = 2π/T = 2π/2 = π ≈ 3,14 рад/с."},
+{q:"Тело движется по окружности радиусом 0,5 м с угловой скоростью 4 рад/с. Чему равна линейная скорость?",
+ o:["2 м/с","8 м/с","0,125 м/с","4 м/с"],
+ e:"v = ω·R = 4·0,5 = 2 м/с."},
+{q:"Радиус окружности 0,5 м, угловая скорость 4 рад/с. Чему равно центростремительное ускорение?",
+ o:["8 м/с²","2 м/с²","16 м/с²","32 м/с²"],
+ e:"a = ω²R = 16·0,5 = 8 м/с². Проверка: v = 2 м/с, a = v²/R = 4/0,5 = 8."},
+{q:"Тело равномерно движется по окружности. Как направлено его ускорение?",
+ o:["К центру окружности","По касательной к окружности","От центра окружности","Равно нулю, так как скорость постоянна по модулю"],
+ e:"Скорость меняется по направлению, поэтому ускорение не равно нулю. Оно перпендикулярно скорости и направлено к центру."},
+{q:"Тело падает с высоты без начальной скорости. Какова его скорость через 4 с падения?",
+ o:["40 м/с","20 м/с","80 м/с","4 м/с"],
+ e:"v = v₀ + gt = 0 + 10·4 = 40 м/с."},
+{q:"С какой высоты упало тело, если падение без начальной скорости длилось 4 с?",
+ o:["80 м","40 м","160 м","20 м"],
+ e:"s = gt²/2 = 10·16/2 = 80 м."},
+{q:"Тело брошено вверх со скоростью 20 м/с. На какую максимальную высоту оно поднимется?",
+ o:["20 м","40 м","10 м","2 м"],
+ e:"В верхней точке v = 0: v² = v₀² − 2gh, откуда h = v₀²/(2g) = 400/20 = 20 м."},
+{q:"На графике показана скорость тела. Какое это движение и чему равно ускорение?",
+ fig:G({xl:"t, с",yl:"v, м/с",xm:5,ym:8,xt:[1,2,3,4,5],yt:[2,4,6,8],pts:[[0,4],[5,4]]}),
+ o:["Равномерное, a = 0","Равноускоренное, a = 4 м/с²","Тело покоится, a = 0","Равнозамедленное, a = −4 м/с²"],
+ e:"Горизонтальный график v(t) означает постоянную скорость, то есть равномерное движение с нулевым ускорением."},
+{q:"По графику найдите, через какое время скорость тела достигнет 12 м/с (движение продолжается так же).",
+ fig:G({xl:"t, с",yl:"v, м/с",xm:5,ym:10,xt:[1,2,3,4,5],yt:[2,4,6,8,10],pts:[[0,0],[4,8]]}),
+ o:["6 с","5 с","8 с","4 с"],
+ e:"a = 8/4 = 2 м/с². Из v = at получаем t = 12/2 = 6 с."},
+{q:"Найдите путь за 4 с по графику скорости.",
+ fig:G({xl:"t, с",yl:"v, м/с",xm:5,ym:8,xt:[1,2,3,4,5],yt:[2,4,6,8],pts:[[0,2],[4,6]]}),
+ o:["16 м","24 м","8 м","12 м"],
+ e:"Площадь трапеции под графиком: (2 + 6)/2·4 = 16 м. Можно и так: средняя скорость 4 м/с, умноженная на 4 с."},
+{q:"Чему равна проекция скорости тела по графику координаты?",
+ fig:G({xl:"t, с",yl:"x, м",xm:5,ym:12,xt:[1,2,3,4,5],yt:[2,4,6,8,10,12],pts:[[0,10],[4,2]]}),
+ o:["−2 м/с","2 м/с","8 м/с","−8 м/с"],
+ e:"v = Δx/Δt = (2 − 10)/4 = −2 м/с. Знак «минус» означает, что тело движется против оси x, приближаясь к началу координат."},
+{q:"Какая формула описывает движение, график координаты которого показан на рисунке?",
+ fig:G({xl:"t, с",yl:"x, м",xm:5,ym:16,xt:[1,2,3,4,5],yt:[2,4,6,8,10,12,14,16],pts:[[0,2],[4,14]]}),
+ o:[f(`x = 2 + 3t`),f(`x = 3 + 2t`),f(`x = 2 + 4t`),f(`x = 14 − 3t`)],
+ e:"x₀ = 2 м (значение при t = 0), v = (14 − 2)/4 = 3 м/с. Подставляем в x = x₀ + v·t."},
+{q:"Тело прошло по окружности радиусом 1 м половину круга. Чему равны путь и модуль перемещения?",
+ o:["Путь ≈ 3,14 м, перемещение 2 м","Путь 2 м, перемещение ≈ 3,14 м","Путь ≈ 6,28 м, перемещение 0","Путь ≈ 3,14 м, перемещение 0"],
+ e:"Путь — длина дуги: πR ≈ 3,14 м. Перемещение — прямая от начала до конца, то есть диаметр: 2R = 2 м."}
+];
+// -------------------------------------------------
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let items=[],picked=[],N=20;
+
+function start(){
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(+c.dataset.n===N)));
+  items=shuffle(QUESTIONS).slice(0,N).map(x=>({q:x.q,e:x.e,fig:x.fig,options:shuffle(x.o.map((t,i)=>({t,ok:i===0})))}));
+  picked=Array(items.length).fill(null);
+  const box=$("questions");box.innerHTML="";
+  items.forEach((it,qi)=>{
+    const fs=document.createElement("fieldset"),lg=document.createElement("legend");
+    lg.innerHTML=`<span class="q-num">${qi+1}.</span> ${it.q}`;fs.appendChild(lg);
+    if(it.fig){const w=document.createElement("div");w.className="figwrap";w.innerHTML=it.fig;fs.appendChild(w);}
+    it.options.forEach((o,oi)=>{
+      const lb=document.createElement("label"),inp=document.createElement("input");
+      inp.type="radio";inp.name="q"+qi;
+      inp.addEventListener("change",()=>{picked[qi]=oi;update();});
+      const sp=document.createElement("span");sp.innerHTML=o.t;
+      lb.append(inp,sp);fs.appendChild(lb);
+    });
+    box.appendChild(fs);
+  });
+  $("result").hidden=true;$("quiz").hidden=false;update();window.scrollTo(0,0);
+}
+
+function update(){
+  const n=picked.filter(v=>v!==null).length,total=items.length;
+  $("count").textContent=n+" из "+total;
+  $("fill").style.width=(n/total*100)+"%";
+  $("submit").disabled=n!==total;$("hint").hidden=n===total;
+}
+
+function finish(){
+  let score=0;const rev=$("review");rev.innerHTML="";
+  items.forEach((it,qi)=>{
+    const right=it.options.findIndex(o=>o.ok),ok=picked[qi]===right;if(ok)score++;
+    const d=document.createElement("div");d.className="rev "+(ok?"ok":"bad");
+    const h=document.createElement("h3");h.innerHTML=`${qi+1}. ${it.q}`;d.appendChild(h);
+    if(it.fig){const w=document.createElement("div");w.className="figwrap";w.innerHTML=it.fig;d.appendChild(w);}
+    const row=(cls,label,html)=>{const r=document.createElement("div");r.className="row "+cls;
+      const b=document.createElement("b");b.textContent=label;const s=document.createElement("span");s.innerHTML=html;r.append(b,s);d.appendChild(r);};
+    if(ok)row("ok","Верно:",it.options[right].t);
+    else{row("bad","Ваш ответ:",it.options[picked[qi]].t);row("ok","Правильный ответ:",it.options[right].t);}
+    const p=document.createElement("p");p.className="expl";p.textContent=it.e;d.appendChild(p);
+    rev.appendChild(d);
+  });
+  const total=items.length,pct=score/total;
+  $("scoreBig").textContent=score+" / "+total;
+  $("scoreText").textContent=pct===1?"Отлично, все формулы на месте!":pct>=0.75?"Хороший результат. Посмотрите разбор ошибок ниже.":pct>=0.5?"Неплохо, но формулы стоит повторить.":"Повторите формулы и попробуйте ещё раз.";
+  $("quiz").hidden=true;$("result").hidden=false;window.scrollTo(0,0);
+}
+$("submit").addEventListener("click",finish);
+$("retry").addEventListener("click",()=>start());
+[10,20,QUESTIONS.length].forEach(n=>{
+  const b=document.createElement("button");b.type="button";b.className="chip";b.dataset.n=n;
+  b.textContent=n===QUESTIONS.length?"Все "+n:n;
+  b.addEventListener("click",()=>{N=n;start();});$("modes").appendChild(b);
+});
+start();
+</script>
+</body>
+</html>
